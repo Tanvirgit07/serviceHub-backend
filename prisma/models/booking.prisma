@@ -1,7 +1,0 @@
-model Booking {
-  id         Int      @id @default(autoincrement())
-  customerId Int
-  roomId     Int
-  customer   Customer @relation(fields: [customerId], references: [id])
-  room       Room     @relation(fields: [roomId], references: [id])
-}

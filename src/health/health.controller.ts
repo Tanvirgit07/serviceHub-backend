@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import catchAsync from "../../utils/catchAsync.js";
-import sendResponse from "../../utils/sendResponse.js";
+import catchAsync from "../utils/catchAsync.js";
+import sendResponse from "../utils/sendResponse.js";
 import { healthService } from "./health.service.js";
 
 const live = (_req: Request, res: Response) => {

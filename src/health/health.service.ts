@@ -1,4 +1,4 @@
-import { prisma } from "../../config/prisma.js";
+import { prisma } from "../config/prisma.js";
 
 // Bound response time and share an in-flight probe across concurrent requests.
 let pendingProbe: Promise<unknown> | undefined;
