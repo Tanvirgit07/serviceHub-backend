@@ -16,12 +16,15 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
+    "cloudinary": "^2.11.0",
     "dotenv": "^18.0.1",
     "express": "^5.2.1",
+    "multer": "^2.4.0",
     "pg": "^8.23.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/multer": "^2.2.0",
     "@types/node": "^26.6.2",
     "prisma": "^7.10.0",
     "tsx": "^4.23.13",

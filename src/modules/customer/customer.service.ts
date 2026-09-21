@@ -1,3 +1,8 @@
+import type { Prisma } from "../../generated/prisma/client.js";
+import type { ParsedFilters } from "../../utils/queryFilters.js";
+import type { customerFilterSchema } from "./customer.validation.js";
+import type { Sorting } from "../../utils/sorting.js";
+import { paginationMeta, type Pagination } from "../../utils/pagination.js";
 import { prisma } from "../../config/prisma.js";
 
 // createCustomer
@@ -12,11 +17,39 @@ const createCustomer = async (data: {
   return customer;
 };
 
-// getCustomer
-const getCustomers = async () => {
-  const customers = await prisma.customer.findMany();
+export const customerSortFields = ["id", "name", "email"] as const;
+type CustomerSortField = (typeof customerSortFields)[number];
 
-  return customers;
+// getCustomer
+const getCustomers = async (
+  pagination: Pagination,
+  sorting: Sorting<CustomerSortField> = { sortBy: "id", sortOrder: "asc" },
+  filters: ParsedFilters<typeof customerFilterSchema> = {},
+) => {
+  const where: Prisma.CustomerWhereInput = {};
+  if (filters.search) {
+    // Treat PostgreSQL LIKE wildcard characters as literal search text.
+    const search = filters.search.replace(/[\\%_]/g, "\\$&");
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+    ];
+  }
+  if (filters.email) where.email = { equals: filters.email };
+
+  const [customers, total] = await prisma.$transaction([
+    prisma.customer.findMany({
+      where,
+      skip: pagination.skip,
+      take: pagination.take,
+      orderBy: sorting.sortBy === "id"
+        ? [{ id: sorting.sortOrder }]
+        : [{ [sorting.sortBy]: sorting.sortOrder }, { id: "asc" }],
+    }),
+    prisma.customer.count({ where }),
+  ], { isolationLevel: "RepeatableRead" });
+
+  return { customers, meta: paginationMeta(pagination, total) };
 };
 
 // getCustomerById

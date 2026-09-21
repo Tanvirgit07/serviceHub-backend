@@ -1,3 +1,10 @@
+import { stringFilter } from "../../utils/queryFilters.js";
+
+export const customerFilterSchema = {
+  search: stringFilter({ maxLength: 100, allowEmpty: true }),
+  email: stringFilter({ maxLength: 254, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ }),
+};
+
 import type { Request } from "express";
 
 const validateCustomerId = (req: Request): string | undefined => {
