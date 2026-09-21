@@ -1,6 +1,6 @@
 import express from "express";
-import customerRouter from "./modules/customer/customer.route.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
+import router from "./routes/index.js";
 
 const app = express();
 
@@ -13,7 +13,7 @@ app.get("/", (req, res) => {
   });
 });
 
-app.use('/api/v1/customer', customerRouter)
+app.use("/api/v1", router);
 
 
 app.use(errorMiddleware);
