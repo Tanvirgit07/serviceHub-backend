@@ -1,6 +1,7 @@
 import express from "express";
 import errorMiddleware from "./middlewares/error.middleware.js";
 import router from "./routes/index.js";
+import notFoundMiddleware from "./middlewares/notFound.middleware.js";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.get("/", (req, res) => {
 app.use("/api/v1", router);
 
 
+app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 
 export default app;
