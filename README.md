@@ -1,88 +1,124 @@
-# Backend template
+# Reusable Backend Template
 
-Reusable TypeScript, Express and PostgreSQL backend with Prisma. Business modules
-and database models are intentionally empty.
+নতুন backend project শুরু করার সময় একই configuration ও utility বারবার লিখতে না হয়—সেই উদ্দেশ্যে এই template। Clone করে PostgreSQL connection সেট করবে, তারপর নিজের business features যোগ করবে।
 
-## Structure
+**Stack:** TypeScript · Express 5 · Prisma 7 · PostgreSQL · Multer · Cloudinary
 
-```text
-prisma/
-  schema.prisma       # Prisma generator and PostgreSQL datasource
-  models/             # Add feature models here
-  migrations/         # Migrations for the new project's models
-src/
-  app.ts              # Express middleware and route registration
-  server.ts           # HTTP server and graceful shutdown
-  config/             # Environment, Prisma and Cloudinary configuration
-  errors/             # Shared application errors
-  health/             # Infrastructure liveness and database readiness checks
-  middlewares/        # Error handling, validation, uploads and 404 handling
-  modules/            # Empty starting point for business features
-  routes/             # Central API router
-  utils/              # Responses, logging, pagination, sorting and uploads
-  generated/prisma/   # Generated client; not committed
-tests/                # Shared utility tests
-```
+Business module ও database model ইচ্ছাকৃতভাবে খালি। Health checks এবং common backend utilities প্রস্তুত আছে।
 
-## Start a new project
+📖 **[সম্পূর্ণ ব্যবহার নির্দেশিকা — setup, commands, reusable helpers ও feature examples](docs/backend-guide.bn.md)**
 
-Run these commands from `backend/`:
+## দ্রুত শুরু
+
+আগে PostgreSQL চালু করে নিজের development database তৈরি করো। বিস্তারিত ধাপ guide-এ আছে। Repository clone করার পরে `backend/` থেকে:
 
 ```sh
 npm ci
+```
+
+প্রথমবার `.env.example` কপি করে `.env` তৈরি করো; আগে থেকেই `.env` থাকলে overwrite করবে না:
+
+```sh
 cp .env.example .env
 ```
 
-Set `DATABASE_URL` in `.env` to your PostgreSQL database, then run:
+`.env`-এ নিজের database URL বসাও:
+
+```dotenv
+NODE_ENV=development
+PORT=5000
+DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/DATABASE?schema=public"
+```
+
+তারপর:
 
 ```sh
 npm run db:generate
 npm run dev
 ```
 
-The template has no application tables or sample migrations. Generating the
-client does not create tables. Cloudinary credentials are only needed when
-importing and using the image upload helpers.
-
-## Add a feature
-
-Create `src/modules/<feature>/` with route, controller, service and validation
-files as needed. Register its router in `src/routes/index.ts`; routes are mounted
-under `/api/v1`.
-
-Add models to `prisma/models/<feature>.prisma`, then run against your development
-database:
+Connection যাচাই:
 
 ```sh
-npm run db:migrate -- --name init
-npm run db:generate
+curl -i http://localhost:5000/api/v1/health/ready
 ```
 
-Use a descriptive migration name for subsequent changes. Commit the schema and
-generated migration files. For deployment, apply committed migrations with
-`npm run db:deploy`.
+`200` ও `database: "up"` মানে database query সফল। Empty template চালাতে application table দরকার নেই; model যোগ করার পরে migration চালাবে।
 
-The former Customer, Hotel, Room and Booking sample models and initial migration
-have been removed from the template. This does not change an existing database;
-start new projects with their own database and migration history.
+## Folder structure
+
+```text
+backend/
+├── docs/                   # বিস্তারিত ব্যবহার নির্দেশিকা
+├── prisma/
+│   ├── schema.prisma       # Generator ও PostgreSQL datasource
+│   ├── models/             # নিজের database models যোগ করবে
+│   └── migrations/         # নতুন project-এর migration history
+├── src/
+│   ├── config/             # Environment, Prisma, Cloudinary
+│   ├── errors/             # AppError
+│   ├── health/             # Liveness ও database readiness
+│   ├── middlewares/        # Validation, upload, errors, 404
+│   ├── modules/            # নিজের business features; এখন খালি
+│   ├── routes/             # Feature routers নিবন্ধন
+│   ├── utils/              # Reusable helpers
+│   ├── generated/prisma/   # db:generate তৈরি করে; Git-এ নেই
+│   ├── app.ts              # Express application
+│   └── server.ts           # Server lifecycle ও shutdown
+├── tests/                  # Shared utility tests
+├── .env.example            # Environment template
+├── prisma7.config.ts       # Prisma CLI configuration
+└── package.json            # Dependencies ও commands
+```
+
+## কী কী reuse করা যাবে
+
+| অংশ | কাজ |
+| --- | --- |
+| Environment validation | Database URL, port, environment ও Cloudinary settings যাচাই |
+| Prisma connection | Shared PostgreSQL client |
+| `sendResponse` | Consistent JSON response |
+| `AppError`, error middleware | HTTP errors ও পরিচিত Prisma/Multer errors handle |
+| `catchAsync` | Async controller error middleware-এ পাঠায় |
+| `validateRequest` | নিজের validator route-এ ব্যবহার |
+| Pagination, sorting, filters | List endpoint-এর query parsing ও validation |
+| Upload middleware | Multipart image গ্রহণ, size/count limits |
+| Image helpers | Cloudinary upload, delete ও failed batch cleanup |
+| Logger | JSON logs |
+| Health checks | Server ও database availability |
+| Graceful shutdown | HTTP server বন্ধ ও database disconnect |
+
+প্রতিটির usage example ও সীমাবদ্ধতা [বিস্তারিত guide-এ](docs/backend-guide.bn.md) দেওয়া আছে।
 
 ## Commands
 
-| Command | Purpose |
+সব command `backend/` থেকে চালাবে।
+
+| Command | কাজ |
 | --- | --- |
-| `npm run dev` | Development server with reload |
-| `npm test` | Shared utility tests, without a database connection |
-| `npm run typecheck` | TypeScript validation after client generation |
-| `npm run db:validate` | Validate Prisma schema |
-| `npm run db:generate` | Generate Prisma client |
-| `npm run db:migrate -- --name <name>` | Create and apply development migrations |
-| `npm run db:deploy` | Apply committed migrations |
-| `npm run build` | Generate client and compile TypeScript |
-| `npm start` | Start compiled server |
+| `npm ci` | Lockfile অনুযায়ী dependencies install |
+| `npm run db:validate` | Prisma schema/config validate; live connection test নয় |
+| `npm run db:generate` | Schema থেকে TypeScript Prisma client তৈরি; table তৈরি করে না |
+| `npm run db:migrate -- --name <name>` | Development migration তৈরি ও database-এ apply |
+| `npm run db:deploy` | Committed pending migrations deployment database-এ apply |
+| `npm run dev` | Development server ও reload |
+| `npm run typecheck` | TypeScript check; আগে client generate থাকতে হবে |
+| `npm test` | Shared query-filter tests; database connection লাগে না |
+| `npm run build` | Client generate ও TypeScript compile করে `dist/` তৈরি |
+| `npm start` | Compiled server চালায়; আগে build করতে হবে |
 
-## Health endpoints
+## Available endpoints
 
-- `GET /api/v1/health/live`: HTTP server liveness.
-- `GET /api/v1/health/ready`: database readiness; returns `503` if unavailable.
+| Endpoint | কাজ |
+| --- | --- |
+| `GET /` | Server message |
+| `GET /api/v1/health/live` | HTTP server response দিতে পারছে কিনা |
+| `GET /api/v1/health/ready` | Database query; সফল হলে `200`, unavailable হলে `503` |
 
-Health checks are infrastructure, so they live outside the business modules.
+## নতুন feature ও deployment
+
+নিজের feature রাখবে `src/modules/<feature>/`-এ, model রাখবে `prisma/models/`-এ এবং router যুক্ত করবে `src/routes/index.ts`-এ। [পূর্ণ উদাহরণ দেখো](docs/backend-guide.bn.md#নতুন-feature-যোগ-করা)।
+
+Authentication, authorization, CORS configuration, rate limiting, security headers এবং business features এখনো অন্তর্ভুক্ত নেই। Upload helpers আছে, upload endpoint তৈরি করা হয়নি। Project অনুযায়ী এসব যোগ করবে।
+
+পুরোনো Customer/Hotel/Room/Booking sample models ও sample migration সরানো হয়েছে। এতে আগে ব্যবহৃত database-এর tables মুছে যায়নি; নতুন project-এর জন্য আলাদা database ব্যবহার করো।
