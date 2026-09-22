@@ -3,7 +3,8 @@ import app from "./app.js";
 import { prisma } from "./config/prisma.js";
 import { logger } from "./utils/logger.js";
 
-const server = app.listen(env.port, () => {
+const server = app.listen(env.port);
+server.once("listening", () => {
   logger.info("Server started", { port: env.port, environment: env.nodeEnv });
 });
 
@@ -41,6 +42,9 @@ const shutdown = (reason: string, exitCode = 0) => {
 
 process.once("SIGINT", () => shutdown("SIGINT"));
 process.once("SIGTERM", () => shutdown("SIGTERM"));
-server.on("error", () => shutdown("HTTP server error", 1));
+server.on("error", (error: NodeJS.ErrnoException) => {
+  logger.error("HTTP server error", { code: error.code, detail: error.message, port: env.port });
+  shutdown("HTTP server error", 1);
+});
 process.once("uncaughtException", () => shutdown("Uncaught exception", 1));
 process.once("unhandledRejection", () => shutdown("Unhandled rejection", 1));

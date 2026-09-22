@@ -7,6 +7,7 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "build": "npm run db:generate && tsc",
     "start": "node dist/server.js",
+    "predev": "npm run db:generate",
     "dev": "tsx watch src/server.ts",
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate --config prisma7.config.ts",
