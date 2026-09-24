@@ -1,0 +1,13 @@
+model BusinessProfile {
+    id           String  @id @default(uuid())
+    businessName String
+    description  String?
+    phone        String
+    address      String
+    accountId    String  @unique
+
+    account Account @relation(fields: [accountId], references: [id])
+
+    createAt DateTime @default(now())
+    updateAt DateTime @updatedAt
+}

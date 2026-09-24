@@ -1,0 +1,13 @@
+model Service {
+    id           String  @id @default(uuid())
+    title        String
+    description  String
+    price        Decimal
+    availability Boolean @default(true)
+    providerId   String
+    provider     Account @relation(fields: [providerId], references: [id])
+    orders       Order[]
+
+    createAt  DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

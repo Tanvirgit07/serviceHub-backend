@@ -1,0 +1,18 @@
+model Account {
+    id        String   @id @default(uuid())
+    name      String
+    email     String   @unique
+    password  String
+    role      Role     @default(CUSTOMER)
+    createdAt DateTime @default(now())
+    updateAt  DateTime @updatedAt
+
+    businessProfile BusinessProfile?
+    services        Service[]
+    customerOrders  Order[]          @relation("CustomerOrders")
+}
+
+enum Role {
+    CUSTOMER
+    PROVIDER
+}

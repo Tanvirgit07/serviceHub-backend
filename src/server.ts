@@ -1,13 +1,19 @@
+// Part: 1
 import { env } from "./config/env.js";
 import app from "./app.js";
 import { prisma } from "./config/prisma.js";
 import { logger } from "./utils/logger.js";
 
+
+
+// Part: 2
 const server = app.listen(env.port);
 server.once("listening", () => {
   logger.info("Server started", { port: env.port, environment: env.nodeEnv });
 });
 
+
+Part: 3
 let shuttingDown = false;
 const shutdown = (reason: string, exitCode = 0) => {
   if (shuttingDown) return;
