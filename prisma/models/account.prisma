@@ -9,6 +9,7 @@ model Account {
 
     businessProfile BusinessProfile?
     services        Service[]
+    
     customerOrders  Order[]          @relation("CustomerOrders")
 }
 
