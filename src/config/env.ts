@@ -39,9 +39,15 @@ export const parseEnv = (source: NodeJS.ProcessEnv) => {
   const accessSecret = source.JWT_ACCESS_SECRET?.trim() || "default_jwt_secret";
   const accessExpiresIn = source.JWT_ACCESS_EXPIRES_IN?.trim() || "1d";
 
+
+  const refreshSecret = source.JWT_REFRESH_SECRET?.trim() || "default_jwt_secret";
+  const refreshExpiresIn = source.JWT_REFRESH_EXPIRES_IN?.trim() || "1d";
+
   const jwt = {
     accessSecret,
     accessExpiresIn,
+    refreshSecret,
+    refreshExpiresIn
   };
 
   return {

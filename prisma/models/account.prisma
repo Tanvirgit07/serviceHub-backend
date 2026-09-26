@@ -11,6 +11,8 @@ model Account {
     services        Service[]
     
     customerOrders  Order[]          @relation("CustomerOrders")
+
+    refreshSessions RefreshSession[]
 }
 
 enum Role {

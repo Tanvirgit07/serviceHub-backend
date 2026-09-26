@@ -21,7 +21,38 @@ const signin = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
+const refreshAccessToken = catchAsync(
+  async (req: Request, res: Response) => {
+    const { refreshToken } = req.body;
+
+    const result = await authService.refreshAccessToken(refreshToken);
+
+    sendResponse(res, {
+      statusCode: 200,
+      message: "Access token refreshed successfully",
+      data: result,
+    });
+  },
+);
+
+const logout = catchAsync(
+  async (req: Request, res: Response) => {
+    const { refreshToken } = req.body;
+
+    await authService.logout(refreshToken);
+
+    sendResponse(res, {
+      statusCode: 200,
+      message: "Logout successful",
+      data: null,
+    });
+  },
+);
+
+
 export const authController = {
     signup,
     signin,
+    refreshAccessToken,
+    logout
 }
