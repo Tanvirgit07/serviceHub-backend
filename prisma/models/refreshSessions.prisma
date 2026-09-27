@@ -1,11 +1,11 @@
 model RefreshSession {
-    id        String    @id @default(uuid())
-    accountId String
-    tokenHash String
-    expiresAt DateTime
-    revokedAt DateTime?
-    createdAt DateTime  @default(now())
-    account   Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  id        String    @id @default(uuid())
+  accountId String
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  account   Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
-    @@index([accountId])
+  @@index([accountId])
 }
