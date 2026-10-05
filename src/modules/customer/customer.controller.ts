@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import { customerService } from "./customer.service.js";
 import sendResponse from "../../utils/sendResponse.js";
+import catchAsync from "../../utils/catchAsync.js";
 
-const getProviderCustomers = async (
+const getProviderCustomers = catchAsync(async (
   req: Request,
   res: Response
 ) => {
@@ -15,9 +16,9 @@ const getProviderCustomers = async (
     message: "Customers retrieved successfully",
     data: result,
   });
-};
+});
 
-const getProviderCustomerById = async (
+const getProviderCustomerById = catchAsync(async (
   req: Request,
   res: Response
 ) => {
@@ -32,7 +33,7 @@ const getProviderCustomerById = async (
     message: "Customer retrieved successfully",
     data: result,
   });
-};
+});
 
 export const customerController = {
   getProviderCustomers,

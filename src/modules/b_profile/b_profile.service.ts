@@ -1,4 +1,5 @@
 import { prisma } from "../../config/prisma.js";
+import AppError from "../../errors/AppError.js";
 
 interface CreateBusinessProfilePayload {
   accountId: string;
@@ -31,32 +32,40 @@ const createBusinessProfile = async (
   });
 
   if (!account) {
-    throw new Error("Account not found");
+    throw new AppError("Account not found", 404);
   }
 
   // Only provider can create business profile
   if (account.role !== "PROVIDER") {
-    throw new Error("Only provider can create business profile");
+    throw new AppError("Only provider can create business profile", 403);
   }
 
-  // Check existing profile
-  const existingProfile = await prisma.businessProfile.findUnique({
+  const profile = await prisma.businessProfile.upsert({
     where: {
       accountId: payload.accountId,
     },
-  });
-
-  if (existingProfile) {
-    throw new Error("Business profile already exists");
-  }
-
-  const profile = await prisma.businessProfile.create({
-    data: {
+    create: {
       accountId: payload.accountId,
       businessName: payload.data.businessName,
       description: payload.data.description,
       phone: payload.data.phone,
       address: payload.data.address,
+    },
+    update: {
+      businessName: payload.data.businessName,
+      description: payload.data.description,
+      phone: payload.data.phone,
+      address: payload.data.address,
+    },
+    include: {
+      account: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+        },
+      },
     },
   });
 
@@ -68,11 +77,17 @@ const getMyBusinessProfile = async (accountId: string) => {
     where: {
       accountId,
     },
+    include: {
+      account: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+        },
+      },
+    },
   });
-
-  if (!profile) {
-    throw new Error("Business profile not found");
-  }
 
   return profile;
 };
@@ -80,22 +95,29 @@ const getMyBusinessProfile = async (accountId: string) => {
 const updateMyBusinessProfile = async (
   payload: UpdateBusinessProfilePayload
 ) => {
-  const existingProfile = await prisma.businessProfile.findUnique({
+  const updatedProfile = await prisma.businessProfile.upsert({
     where: {
       accountId: payload.accountId,
     },
-  });
-
-  if (!existingProfile) {
-    throw new Error("Business profile not found");
-  }
-
-  const updatedProfile = await prisma.businessProfile.update({
-    where: {
+    create: {
       accountId: payload.accountId,
+      businessName: payload.data.businessName || "My Business",
+      description: payload.data.description || "",
+      phone: payload.data.phone || "",
+      address: payload.data.address || "",
     },
-    data: {
+    update: {
       ...payload.data,
+    },
+    include: {
+      account: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+        },
+      },
     },
   });
 

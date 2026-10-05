@@ -20,7 +20,7 @@ serviceRouter.get(
   serviceController.getMyservices,
 );
 
-serviceRouter.get("/service-details/:id", authMiddleware,serviceController.getServiceDetails);
+serviceRouter.get("/service-details/:id", serviceController.getServiceDetails);
 
 serviceRouter.patch(
   "/update-service/:id",

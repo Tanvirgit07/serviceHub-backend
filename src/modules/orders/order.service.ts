@@ -125,6 +125,16 @@ const cancelOrder = async (
         },
         data: {
             status: OrderStatus.CANCELLED
+        },
+        include: {
+            service: true,
+            customer: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true
+                }
+            }
         }
     });
 
@@ -203,6 +213,16 @@ const updateOrderStatus = async (
         },
         data: {
             status: payload.status
+        },
+        include: {
+            service: true,
+            customer: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true
+                }
+            }
         }
     });
 
