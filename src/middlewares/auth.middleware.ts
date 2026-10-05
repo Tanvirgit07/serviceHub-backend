@@ -22,21 +22,31 @@ const authMiddleware = (
     throw new AppError("Invalid authorization format", 401);
   }
 
-  // 3. Verify access token
-  const decoded = jwt.verify(
-    token,
-    env.jwt.accessSecret,
-  ) as {
-    id: string;
-    email: string;
-    role: "CUSTOMER" | "PROVIDER";
-  };
+  try {
+    // 3. Verify access token
+    const decoded = jwt.verify(
+      token,
+      env.jwt.accessSecret,
+    ) as {
+      id: string;
+      email: string;
+      role: "CUSTOMER" | "PROVIDER";
+    };
 
-  // 4. Attach authenticated user to request
-  req.user = decoded;
+    // 4. Attach authenticated user to request
+    req.user = decoded;
 
-  // 5. Continue to next middleware/controller
-  next();
+    // 5. Continue to next middleware/controller
+    next();
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      throw new AppError("Token expired", 401);
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      throw new AppError("Invalid token", 401);
+    }
+    throw new AppError("Authentication failed", 401);
+  }
 };
 
 export default authMiddleware;

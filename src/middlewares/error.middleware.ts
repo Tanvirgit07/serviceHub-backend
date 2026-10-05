@@ -73,6 +73,12 @@ const errorMiddleware: ErrorRequestHandler = (
         message = "Related record is missing or still in use";
         break;
     }
+  } else if (err?.name === "TokenExpiredError") {
+    statusCode = 401;
+    message = "Token expired";
+  } else if (err?.name === "JsonWebTokenError") {
+    statusCode = 401;
+    message = "Invalid token";
   }
 
   if (statusCode >= 500) {
