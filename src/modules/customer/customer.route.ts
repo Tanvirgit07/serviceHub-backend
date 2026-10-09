@@ -2,6 +2,8 @@ import { Router } from "express";
 import authMiddleware from "../../middlewares/auth.middleware.js";
 import authorize from "../../middlewares/authorize.middleware.js";
 import { customerController } from "./customer.controller.js";
+import validateRequest from "../../middlewares/validateRequest.js";
+import { commonValidation } from "../../middlewares/common.validation.js";
 
 const customerRouter = Router();
 
@@ -18,6 +20,7 @@ customerRouter.get(
   "/:id",
   authMiddleware,
   authorize("PROVIDER"),
+  validateRequest(commonValidation.paramIdSchema),
   customerController.getProviderCustomerById
 );
 
