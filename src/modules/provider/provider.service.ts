@@ -1,5 +1,5 @@
 import { prisma } from "../../config/prisma.js";
-
+import AppError from "../../errors/AppError.js";
 
 interface GetProviderByIdPayload {
   providerId: string;
@@ -67,7 +67,7 @@ const getProviderById = async (payload : GetProviderByIdPayload) => {
   });
 
   if (!provider) {
-    throw new Error("Provider not found");
+    throw new AppError("Provider not found", 404);
   }
 
   return provider;

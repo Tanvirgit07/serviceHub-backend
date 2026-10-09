@@ -4,6 +4,7 @@ import type { ErrorRequestHandler } from "express";
 import multer from "multer";
 import { Prisma } from "../generated/prisma/client.js";
 import AppError from "../errors/AppError.js";
+import { ZodError } from "zod";
 
 const errorMiddleware: ErrorRequestHandler = (
   err,
@@ -17,10 +18,18 @@ const errorMiddleware: ErrorRequestHandler = (
 
   let statusCode = 500;
   let message = "Something went wrong";
+  let errors: any = undefined;
 
   if (err instanceof AppError) {
     statusCode = err.statusCode;
     message = err.message;
+  } else if (err instanceof ZodError) {
+    statusCode = 400;
+    message = "Validation Error";
+    errors = err.issues.map((issue) => ({
+      field: issue.path.filter((p) => p !== "body" && p !== "query" && p !== "params").join("."),
+      message: issue.message,
+    }));
   } else if (err instanceof multer.MulterError) {
     statusCode = err.code === "LIMIT_FILE_SIZE" ? 413 : 400;
 
@@ -89,6 +98,7 @@ const errorMiddleware: ErrorRequestHandler = (
   sendResponse(res, {
     statusCode,
     message,
+    errors,
   });
 };
 

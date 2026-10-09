@@ -1,17 +1,22 @@
-import type { Request, RequestHandler } from "express";
-import AppError from "../errors/AppError.js";
+import type { Request, Response, NextFunction, RequestHandler } from "express";
+import type { ZodType } from "zod";
 
-type Validator = (req: Request) => string | undefined;
+const validateRequest = (schema: ZodType): RequestHandler => {
+  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const parsed = await schema.parseAsync({
+        body: req.body,
+        query: req.query,
+        params: req.params,
+      }) as { body?: any; query?: any; params?: any };
 
-const validateRequest = (validator: Validator): RequestHandler => {
-  return (req, _res, next) => {
-    const message = validator(req);
-
-    if (message) {
-      return next(new AppError(message, 400));
+      if (parsed.body !== undefined) {
+        req.body = parsed.body;
+      }
+      next();
+    } catch (error) {
+      next(error);
     }
-
-    next();
   };
 };
 

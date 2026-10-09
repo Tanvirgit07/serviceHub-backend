@@ -5,6 +5,7 @@ export type ResponseOptions<T> = {
   message: string;
   data?: T;
   meta?: { page: number; limit: number; total: number; totalPages: number };
+  errors?: any;
 };
 
 const sendResponse = <T>(res: Response, options: ResponseOptions<T>): void => {

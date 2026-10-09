@@ -1,6 +1,6 @@
 import { prisma } from "../../config/prisma.js";
 import { OrderStatus } from "../../generated/prisma/enums.js";
-
+import AppError from "../../errors/AppError.js";
 
 interface CreateOrderPayload {
     customerId: string;
@@ -12,7 +12,6 @@ interface UpdateOrderStatusPayload {
     status: OrderStatus;
 }
 
-
 // 1. Create Order
 const createOrder = async (payload: CreateOrderPayload) => {
 
@@ -23,11 +22,11 @@ const createOrder = async (payload: CreateOrderPayload) => {
     });
 
     if (!service) {
-        throw new Error("Service not found");
+        throw new AppError("Service not found", 404);
     }
 
     if (!service.availability) {
-        throw new Error("Service is not available");
+        throw new AppError("Service is not available", 400);
     }
 
     const order = await prisma.order.create({
@@ -83,7 +82,7 @@ const getOrderById = async (orderId: string) => {
     });
 
     if (!order) {
-        throw new Error("Order not found");
+        throw new AppError("Order not found", 404);
     }
 
     return order;
@@ -103,19 +102,20 @@ const cancelOrder = async (
     });
 
     if (!order) {
-        throw new Error("Order not found");
+        throw new AppError("Order not found", 404);
     }
 
     if (order.customerId !== customerId) {
-        throw new Error("You are not allowed to cancel this order");
+        throw new AppError("You are not allowed to cancel this order", 403);
     }
 
     if (
         order.status === OrderStatus.COMPLETED ||
         order.status === OrderStatus.CANCELLED
     ) {
-        throw new Error(
-            `Order cannot be cancelled because it is already ${order.status}`
+        throw new AppError(
+            `Order cannot be cancelled because it is already ${order.status}`,
+            400
         );
     }
 
@@ -186,24 +186,27 @@ const updateOrderStatus = async (
     });
 
     if (!order) {
-        throw new Error("Order not found");
+        throw new AppError("Order not found", 404);
     }
 
     if (order.service.providerId !== providerId) {
-        throw new Error(
-            "You are not allowed to update this order"
+        throw new AppError(
+            "You are not allowed to update this order",
+            403
         );
     }
 
     if (order.status === OrderStatus.CANCELLED) {
-        throw new Error(
-            "Cancelled order status cannot be changed"
+        throw new AppError(
+            "Cancelled order status cannot be changed",
+            400
         );
     }
 
     if (order.status === OrderStatus.COMPLETED) {
-        throw new Error(
-            "Completed order status cannot be changed"
+        throw new AppError(
+            "Completed order status cannot be changed",
+            400
         );
     }
 

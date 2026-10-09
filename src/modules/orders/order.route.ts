@@ -2,8 +2,8 @@ import { Router } from "express";
 import authMiddleware from "../../middlewares/auth.middleware.js";
 import authorize from "../../middlewares/authorize.middleware.js";
 import { orderController } from "./order.controller.js";
-
-
+import validateRequest from "../../middlewares/validateRequest.js";
+import { orderValidation } from "./order.validation.js";
 
 const OrderRouter = Router();
 
@@ -12,6 +12,7 @@ OrderRouter.post(
   "/",
   authMiddleware,
   authorize("CUSTOMER"),
+  validateRequest(orderValidation.createOrderSchema),
   orderController.createOrder
 );
 
@@ -26,6 +27,7 @@ OrderRouter.patch(
   "/:id/cancel",
   authMiddleware,
   authorize("CUSTOMER"),
+  validateRequest(orderValidation.orderIdParamSchema),
   orderController.cancelOrder
 );
 
@@ -41,6 +43,7 @@ OrderRouter.patch(
   "/:id/status",
   authMiddleware,
   authorize("PROVIDER"),
+  validateRequest(orderValidation.updateOrderStatusSchema),
   orderController.updateOrderStatus
 );
 
@@ -48,7 +51,8 @@ OrderRouter.patch(
 OrderRouter.get(
   "/:id",
   authMiddleware,
+  validateRequest(orderValidation.orderIdParamSchema),
   orderController.getOrderById
 );
 
-export default OrderRouter
+export default OrderRouter;
