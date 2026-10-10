@@ -13,7 +13,7 @@ server.once("listening", () => {
 });
 
 
-Part: 3
+// Part 3: Graceful Shutdown
 let shuttingDown = false;
 const shutdown = (reason: string, exitCode = 0) => {
   if (shuttingDown) return;

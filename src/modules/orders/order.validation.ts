@@ -35,6 +35,11 @@ const orderIdParamSchema = z.object({
   }),
 });
 
+// DTO types — Zod schema থেকে infer করা হয়েছে
+export type CreateOrderBodyDto         = z.infer<typeof createOrderSchema>["body"];
+export type UpdateOrderStatusBodyDto   = z.infer<typeof updateOrderStatusSchema>["body"];
+export type OrderIdParamDto            = z.infer<typeof orderIdParamSchema>["params"];
+
 export const orderValidation = {
   createOrderSchema,
   updateOrderStatusSchema,

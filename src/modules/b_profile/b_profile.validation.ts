@@ -24,8 +24,11 @@ const updateBusinessProfileSchema = z.object({
   }),
 });
 
+// DTO types — Zod schema থেকে infer করা হয়েছে
+export type CreateBusinessProfileDto = z.infer<typeof createBusinessProfileSchema>["body"];
+export type UpdateBusinessProfileDto = z.infer<typeof updateBusinessProfileSchema>["body"];
+
 export const businessProfileValidation = {
   createBusinessProfileSchema,
   updateBusinessProfileSchema,
 };
-

@@ -44,6 +44,9 @@ serviceRouter.delete(
   serviceController.deleteService,
 );
 
-serviceRouter.get("/all-services", serviceController.getAllServices);
+serviceRouter.get("/all-services",
+  validateRequest(serviceValidation.getAllServicesSchema),
+  serviceController.getAllServices
+);
 
 export default serviceRouter;

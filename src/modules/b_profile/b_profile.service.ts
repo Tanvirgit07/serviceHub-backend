@@ -1,45 +1,23 @@
 import { prisma } from "../../config/prisma.js";
-import AppError from "../../errors/AppError.js";
+import type { CreateBusinessProfileDto, UpdateBusinessProfileDto } from "./b_profile.validation.js";
 
-interface CreateBusinessProfilePayload {
+// manually লেখা interface সরানো হয়েছে — Zod-inferred DTO type ব্যবহার করা হচ্ছে
+
+interface CreateBusinessProfileInput {
   accountId: string;
-  data: {
-    businessName: string;
-    description?: string;
-    phone: string;
-    address: string;
-  };
+  data: CreateBusinessProfileDto;
 }
 
-interface UpdateBusinessProfilePayload {
+interface UpdateBusinessProfileInput {
   accountId: string;
-  data: {
-    businessName?: string;
-    description?: string;
-    phone?: string;
-    address?: string;
-  };
+  data: UpdateBusinessProfileDto;
 }
 
 const createBusinessProfile = async (
-  payload: CreateBusinessProfilePayload
+  payload: CreateBusinessProfileInput
 ) => {
-  // Check account
-  const account = await prisma.account.findUnique({
-    where: {
-      id: payload.accountId,
-    },
-  });
-
-  if (!account) {
-    throw new AppError("Account not found", 404);
-  }
-
-  // Only provider can create business profile
-  if (account.role !== "PROVIDER") {
-    throw new AppError("Only provider can create business profile", 403);
-  }
-
+  // route-এ authorize("PROVIDER") আছে — redundant account DB query সরানো হয়েছে
+  // আগে: prisma.account.findUnique + role check ছিল (extra DB call, middleware duplicate)
   const profile = await prisma.businessProfile.upsert({
     where: {
       accountId: payload.accountId,
@@ -93,7 +71,7 @@ const getMyBusinessProfile = async (accountId: string) => {
 };
 
 const updateMyBusinessProfile = async (
-  payload: UpdateBusinessProfilePayload
+  payload: UpdateBusinessProfileInput
 ) => {
   const updatedProfile = await prisma.businessProfile.upsert({
     where: {

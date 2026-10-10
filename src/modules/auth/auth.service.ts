@@ -4,20 +4,12 @@ import AppError from "../../errors/AppError.js";
 import jwt from "jsonwebtoken";
 import { env } from "../../config/env.js";
 import { randomUUID } from "crypto";
+import type { SignupDto, SigninDto, RefreshTokenDto } from "./auth.validation.js";
 
-interface SignupInput {
-  name: string;
-  email: string;
-  password: string;
-  role?: "CUSTOMER" | "PROVIDER";
-}
+// manually লেখা interface সরানো হয়েছে — Zod-inferred DTO type ব্যবহার করা হচ্ছে
+// এতে schema ও service সবসময় sync থাকে
 
-interface signinPayload {
-  email: string;
-  password: string;
-}
-
-const signup = async (payload: SignupInput) => {
+const signup = async (payload: SignupDto) => {
   const { name, email, password, role = "CUSTOMER" } = payload;
 
   // 1. Check existing account
@@ -55,7 +47,7 @@ const signup = async (payload: SignupInput) => {
   return account;
 };
 
-const signin = async ({ email, password }: signinPayload) => {
+const signin = async ({ email, password }: SigninDto) => {
   // 1. Check existing account
   const account = await prisma.account.findUnique({
     where: {
@@ -128,7 +120,7 @@ const signin = async ({ email, password }: signinPayload) => {
   };
 };
 
-const refreshAccessToken = async (refreshToken: string) => {
+const refreshAccessToken = async (refreshToken: RefreshTokenDto["refreshToken"]) => {
   // 1.Verify refresh token
   const decoded = jwt.verify(refreshToken, env.jwt.refreshSecret) as {
     id: string;
@@ -178,7 +170,7 @@ const refreshAccessToken = async (refreshToken: string) => {
   };
 };
 
-const logout = async (refreshToken: string) => {
+const logout = async (refreshToken: RefreshTokenDto["refreshToken"]) => {
   // 1. Verify refresh token
   const decoded = jwt.verify(
     refreshToken,
@@ -211,6 +203,7 @@ const logout = async (refreshToken: string) => {
 
   return null;
 };
+
 export const authService = {
   signup,
   signin,

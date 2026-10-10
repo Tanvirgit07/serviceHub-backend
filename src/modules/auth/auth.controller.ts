@@ -2,9 +2,12 @@ import { Request, Response } from "express";
 import catchAsync from "../../utils/catchAsync.js";
 import { authService } from "./auth.service.js";
 import sendResponse from "../../utils/sendResponse.js";
+import type { SignupDto, SigninDto, RefreshTokenDto } from "./auth.validation.js";
 
 const signup = catchAsync(async (req: Request, res: Response) => {
-    const result = await authService.signup(req.body);
+    // validateRequest middleware-এর পর req.body হলো Zod-parsed SignupDto
+    const dto = req.body as SignupDto;
+    const result = await authService.signup(dto);
     sendResponse(res, {
         statusCode : 201,
         message : "Account created successfuly!",
@@ -13,7 +16,8 @@ const signup = catchAsync(async (req: Request, res: Response) => {
 })
 
 const signin = catchAsync(async (req: Request, res: Response) => {
-    const result = await authService.signin(req.body);
+    const dto = req.body as SigninDto;
+    const result = await authService.signin(dto);
     sendResponse(res, {
         statusCode : 200,
         message : "Signin successfuly!",
@@ -23,7 +27,7 @@ const signin = catchAsync(async (req: Request, res: Response) => {
 
 const refreshAccessToken = catchAsync(
   async (req: Request, res: Response) => {
-    const { refreshToken } = req.body;
+    const { refreshToken } = req.body as RefreshTokenDto;
 
     const result = await authService.refreshAccessToken(refreshToken);
 
@@ -37,7 +41,7 @@ const refreshAccessToken = catchAsync(
 
 const logout = catchAsync(
   async (req: Request, res: Response) => {
-    const { refreshToken } = req.body;
+    const { refreshToken } = req.body as RefreshTokenDto;
 
     await authService.logout(refreshToken);
 

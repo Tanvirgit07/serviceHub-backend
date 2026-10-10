@@ -1,9 +1,11 @@
 import { Request, Response } from "express";
 import { providerService } from "./provider.service.js";
 import sendResponse from "../../utils/sendResponse.js";
+import catchAsync from "../../utils/catchAsync.js";
 
 
-const getAllProviders = async (
+// catchAsync যোগ করা হয়েছে — আগে ছিল না, error catch হতো না
+const getAllProviders = catchAsync(async (
   req: Request,
   res: Response
 ) => {
@@ -14,9 +16,10 @@ const getAllProviders = async (
     message: "Providers retrieved successfully",
     data: result,
   });
-};
+});
 
-const getProviderById = async (
+// catchAsync যোগ করা হয়েছে — আগে ছিল না, error catch হতো না
+const getProviderById = catchAsync(async (
   req: Request,
   res: Response
 ) => {
@@ -29,7 +32,7 @@ const getProviderById = async (
     message: "Provider retrieved successfully",
     data: result,
   });
-};
+});
 
 export const providerController = {
   getAllProviders,

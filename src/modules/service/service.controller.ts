@@ -2,19 +2,20 @@ import { Request, Response } from "express";
 import { serviceService } from "./service.service.js";
 import sendResponse from "../../utils/sendResponse.js";
 import catchAsync from "../../utils/catchAsync.js";
+import type { CreateServiceDto, UpdateServiceDto, GetAllServicesQueryDto } from "./service.validation.js";
 
 const createService = catchAsync(async (req: Request, res: Response) => {
   const providerId = req.user.id;
+  // explicit destructure — শুধু প্রয়োজনীয় fields service-এ যাচ্ছে
+  const { title, description, price, availability } = req.body as CreateServiceDto;
 
-  const payload = {
+  const result = await serviceService.createService({
     providerId,
-    data: req.body,
-  };
-
-  const result = await serviceService.createService(payload);
+    data: { title, description, price, availability },
+  });
 
   sendResponse(res, {
-    statusCode: 201,
+    statusCode: 201, // ✅ POST (create) = 201
     message: "Service created successfuly!",
     data: result,
   });
@@ -26,7 +27,7 @@ const getMyservices = catchAsync(async (req: Request, res: Response) => {
   const result = await serviceService.getMyservices(providerId);
 
   sendResponse(res, {
-    statusCode: 201,
+    statusCode: 200, // ✅ GET (read) = 200
     message: "Your services retrieved successfully",
     data: result,
   });
@@ -36,7 +37,7 @@ const getServiceDetails = catchAsync(async (req: Request, res: Response) => {
   const serviceId = req.params.id as string;
   const result = await serviceService.getServiceDetails(serviceId);
   sendResponse(res, {
-    statusCode: 201,
+    statusCode: 200, // ✅ GET (read) = 200
     message: "Service details retrieved successfully",
     data: result,
   });
@@ -44,18 +45,17 @@ const getServiceDetails = catchAsync(async (req: Request, res: Response) => {
 
 const updateService = catchAsync(async (req: Request, res: Response) => {
   const providerId = req.user.id as string;
-  const serviceId = req.params.id as string;
+  const serviceId  = req.params.id as string;
+  const data       = req.body as UpdateServiceDto;
 
-  const payload = {
+  const result = await serviceService.updateService({
     serviceId,
     providerId,
-    data: req.body,
-  };
-
-  const result = await serviceService.updateService(payload);
+    data,
+  });
 
   sendResponse(res, {
-    statusCode: 201,
+    statusCode: 200, // ✅ PATCH (update) = 200
     message: "Service updated successfully",
     data: result,
   });
@@ -63,31 +63,29 @@ const updateService = catchAsync(async (req: Request, res: Response) => {
 
 const deleteService = catchAsync(async(req: Request, res: Response) => {
     const providerId = req.user.id as string;
-    const serviceId = req.params.id as string;
+    const serviceId  = req.params.id as string;
 
-    const deletePayload = {
-        serviceId,
-        providerId,
-    }
-
-    const result = await serviceService.deleteService(deletePayload);
+    const result = await serviceService.deleteService({ serviceId, providerId });
 
     sendResponse(res, {
-        statusCode: 201,
+        statusCode: 200, // ✅ DELETE = 200
         message: "Service deleted successfully",
         data: result
     })
 })
 
-const getAllServices = async (req: Request, res: Response) => {
-    const result = await serviceService.getAllServices(req.query);
+// catchAsync যোগ করা হয়েছে — আগে ছিল না, error catch হতো না
+const getAllServices = catchAsync(async (req: Request, res: Response) => {
+    // validateRequest middleware query validate ও coerce করেছে
+    const query = req.query as unknown as GetAllServicesQueryDto;
+    const result = await serviceService.getAllServices(query);
 
     sendResponse(res, {
-        statusCode : 201,
-        message : "Services retrieved successfully",
+        statusCode: 200, // ✅ GET (read) = 200
+        message: "Services retrieved successfully",
         data: result
     })
-}
+})
 
 export const serviceController = {
   createService,

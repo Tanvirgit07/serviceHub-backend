@@ -10,9 +10,9 @@ const validateRequest = (schema: ZodType): RequestHandler => {
         params: req.params,
       }) as { body?: any; query?: any; params?: any };
 
-      if (parsed.body !== undefined) {
-        req.body = parsed.body;
-      }
+      if (parsed.body !== undefined)   req.body   = parsed.body;
+      if (parsed.query !== undefined)  req.query  = parsed.query;
+      if (parsed.params !== undefined) req.params = parsed.params;
       next();
     } catch (error) {
       next(error);

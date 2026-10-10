@@ -1,43 +1,28 @@
 import { prisma } from "../../config/prisma.js";
 import AppError from "../../errors/AppError.js";
+import { Prisma } from "../../generated/prisma/client.js";
+import type { CreateServiceDto, UpdateServiceDto, GetAllServicesQueryDto } from "./service.validation.js";
 
-interface servicePayload {
-    providerId : string
-    data : {
-        title: string;
-        description: string;
-        price: number;
-        availability?: boolean;
-    }
+// manually লেখা interface সরানো হয়েছে — Zod-inferred DTO type ব্যবহার করা হচ্ছে
+
+interface CreateServiceInput {
+    providerId: string;
+    data: CreateServiceDto;
 }
 
-
-interface updateServicePayload {
+interface UpdateServiceInput {
     serviceId: string;
     providerId: string;
-    data: {
-        title?: string;
-        description?: string;
-        price?: number;
-        availability?: boolean
-    }
+    data: UpdateServiceDto;
 }
 
-
-interface deleteServicePayload {
+interface DeleteServiceInput {
     serviceId: string;
     providerId: string;
 }
 
 
-interface GetAllServicesQuery {
-    search?: string;
-    minPrice?: string;
-    maxPrice?: string;
-    availability?: string;
-}
-
-const createService = async(payload: servicePayload) => {
+const createService = async(payload: CreateServiceInput) => {
     const service = await prisma.service.create({
         data: {
             title: payload.data.title,
@@ -78,7 +63,7 @@ const getServiceDetails = async(serviceId: string) => {
     return service
 }
 
-const updateService = async(payload: updateServicePayload) => {
+const updateService = async(payload: UpdateServiceInput) => {
     const existingService = await prisma.service.findUnique({
         where: {
             id: payload.serviceId
@@ -93,7 +78,7 @@ const updateService = async(payload: updateServicePayload) => {
         throw new AppError("You are not allowed to update this service", 403)
     }
 
-    const updateService = await prisma.service.update({
+    const updatedService = await prisma.service.update({
         where:{
             id: payload.serviceId,
         },
@@ -102,10 +87,10 @@ const updateService = async(payload: updateServicePayload) => {
         }
     })
 
-    return updateService;
+    return updatedService;
 }
 
-const deleteService = async(payload: deleteServicePayload) => {
+const deleteService = async(payload: DeleteServiceInput) => {
     const existingService = await prisma.service.findUnique({
         where: {
             id: payload.serviceId
@@ -120,51 +105,39 @@ const deleteService = async(payload: deleteServicePayload) => {
         throw new AppError("You are not allowed to delete this service",403);
     }
 
-    const deleteService = await prisma.service.delete({
+    const deletedService = await prisma.service.delete({
         where: {
             id: payload.serviceId
         }
     })
 
-    return deleteService;
+    return deletedService;
 }
 
-const getAllServices = async (query: GetAllServicesQuery) => {
-    const {search,minPrice,maxPrice,availability} = query;
-    const where: any = {};
+const getAllServices = async (query: GetAllServicesQueryDto) => {
+    const { search, minPrice, maxPrice, availability } = query;
 
-    if(search){
+    // Prisma.ServiceWhereInput ব্যবহার করা হচ্ছে — `any` এর বদলে type-safe
+    const where: Prisma.ServiceWhereInput = {};
+
+    if (search) {
         where.OR = [
-            {
-                title: {
-                    contains: search,
-                    mode: "insensitive",
-                },
-            },
-            {
-                description: {
-                    contains: search,
-                    mode:"insensitive"
-                }
-                
-            }
-        ]
+            { title: { contains: search, mode: "insensitive" } },
+            { description: { contains: search, mode: "insensitive" } },
+        ];
     }
 
-    if(minPrice || maxPrice){
-        where.price = {};
-
-        if(minPrice){
-            where.price.gte = Number(minPrice);
-        }
-
-        if(maxPrice){
-            where.price.lte = Number(maxPrice);
-        }
+    if (minPrice !== undefined || maxPrice !== undefined) {
+        // Zod coerce করেছে — এখানে minPrice/maxPrice already number, manual Number() লাগবে না
+        where.price = {
+            gte: minPrice,
+            lte: maxPrice,
+        };
     }
 
-    if(availability !== undefined){
-        where.availability = availability === "true";
+    if (availability !== undefined) {
+        // Zod transform করেছে — availability already boolean, manual "=== true" লাগবে না
+        where.availability = availability;
     }
 
     const services = await prisma.service.findMany({
@@ -176,6 +149,7 @@ const getAllServices = async (query: GetAllServicesQuery) => {
 
     return services
 }
+
 export const serviceService = {
     createService,
     getMyservices,

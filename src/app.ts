@@ -1,8 +1,10 @@
 import { logger } from "./utils/logger.js";
 import express from "express";
+import { env } from "./config/env.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
 import router from "./routes/index.js";
 import notFoundMiddleware from "./middlewares/notFound.middleware.js";
+
 
 const app = express();
 
@@ -19,7 +21,7 @@ app.use((_req, res, next) => {
 });
 
 app.use((_req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Origin", env.corsOrigin);
   res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (_req.method === "OPTIONS") {
@@ -28,6 +30,7 @@ app.use((_req, res, next) => {
   }
   next();
 });
+
 
 app.use(express.json());
 

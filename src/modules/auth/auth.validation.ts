@@ -34,9 +34,14 @@ const refreshTokenSchema = z.object({
   }),
 });
 
+// DTO types — inferred directly from Zod schemas
+// Schema পরিবর্তন হলে এই types automatically update হয়
+export type SignupDto       = z.infer<typeof signupSchema>["body"];
+export type SigninDto       = z.infer<typeof signinSchema>["body"];
+export type RefreshTokenDto = z.infer<typeof refreshTokenSchema>["body"];
+
 export const authValidation = {
   signupSchema,
   signinSchema,
   refreshTokenSchema,
 };
-
